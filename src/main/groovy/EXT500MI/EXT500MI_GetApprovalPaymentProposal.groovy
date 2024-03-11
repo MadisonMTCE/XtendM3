@@ -33,7 +33,7 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240227  TTATAROGLOU   Developed WKF014- Get to get table row from table EXTAPP the Approval Payment
+ *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Get to get table row from table EXTAPP the Approval Payment
  *                                          Proposal record as a basis for Payments Approval (Payments) Change Request.
  *
  */
@@ -48,7 +48,7 @@ public class Get extends ExtendM3Transaction {
   
   //Input fields
   private String cono;
-  private int XXCONO;
+  private int xxCONO;
   private String divi;
   private String prpn;
   private String pyon;
@@ -66,42 +66,42 @@ public class Get extends ExtendM3Transaction {
   }
   
   public void main() {
-  	logger.info("main() Start");
-  	//Validate input fields
+  	logger.debug("main() Start");
+  	/* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  XXCONO= cono.toInteger();
+			  xxCONO = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			XXCONO= program.LDAZD.CONO;
+			xxCONO = program.LDAZD.CONO;
 		}
-    logger.info("cono=" + cono + " XXCONO=" + XXCONO);
+    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
-  	logger.info("divi=" + divi);
+  	logger.debug("divi=" + divi);
     if (divi == "?") {
       divi = "";
     } 
   	if (divi.isEmpty()) {
-      divi = program.LDAZD.DIVI; // get from M3 current DIVI using, not sure if this will work, if not then force them to send it
-  	  logger.info("divi=" + divi);
+      divi = program.LDAZD.DIVI;
+  	  logger.debug("divi=" + divi);
     }
     prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
   	if (prpn == "?") {
   	  prpn = "";
   	}
-    logger.info("prpn=" + prpn);
+    logger.debug("prpn=" + prpn);
     pyon = mi.inData.get("PYON") == null ? '' : mi.inData.get("PYON").trim();
   	if (pyon == "?") {
   	  pyon = "";
   	}
-    logger.info("pyon=" + pyon);
+    logger.debug("pyon=" + pyon);
     if (prpn.isEmpty()) {
       mi.error("Payment Proposal Number must be entered.");
       return;
@@ -111,22 +111,22 @@ public class Get extends ExtendM3Transaction {
       return;
     }
     
-    // Search for record
-    logger.info("Validation passed will now query EXTAPP table");
+    /* Search for record */
+    logger.debug("Validation passed will now query EXTAPP table");
     DBAction query = database.table("EXTAPP").index("00").selection("EXASTS", "EXAPPR", "EXGRPI", "EXAPAM", "EXDATE").build();
     DBContainer container = query.getContainer();
-    container.set("EXCONO", XXCONO);
+    container.set("EXCONO", xxCONO);
     container.set("EXDIVI", divi);
     container.set("EXPRPN", Integer.parseInt(prpn));
     container.set("EXPYON", Integer.parseInt(pyon));
     if (query.read(container)) {
-      mi.outData.put("CONO", XXCONO.toString());
+      mi.outData.put("CONO", xxCONO.toString());
       mi.outData.put("DIVI", divi);
       mi.outData.put("PRPN", prpn);
       mi.outData.put("PYON", pyon);
-      logger.info("container.get(EXASTS).toString()=" + container.get("EXASTS").toString());
-      logger.info("container.get(EXAPPR).toString()=" + container.get("EXAPPR").toString());
-      logger.info("container.get(EXGRPI).toString()=" + container.get("EXGRPI").toString());
+      logger.debug("container.get(EXASTS).toString()=" + container.get("EXASTS").toString());
+      logger.debug("container.get(EXAPPR).toString()=" + container.get("EXAPPR").toString());
+      logger.debug("container.get(EXGRPI).toString()=" + container.get("EXGRPI").toString());
       mi.outData.put("ASTS", container.get("EXASTS").toString());
       mi.outData.put("APPR", container.get("EXAPPR").toString());
       mi.outData.put("GRPI", container.get("EXGRPI").toString());

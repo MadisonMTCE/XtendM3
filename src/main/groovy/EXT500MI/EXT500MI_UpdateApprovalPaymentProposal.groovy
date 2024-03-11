@@ -34,7 +34,7 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240228  TTATAROGLOU   Developed WKF014- Update EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Update EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -51,9 +51,9 @@
   private final ProgramAPI program;
   private final IonAPI ion;
   
-  //Input fields must be all strings then covert to data type required to adding to database
+  /* Input fields */
   private String cono;
-  private int XXCONO;
+  private int xxCONO;
   private String divi;
   private String prpn;
   private String pyon;
@@ -76,66 +76,66 @@
   }
   
   public void main() {
-    logger.info("main() Start");
-  	//Validate input fields
+    logger.debug("main() Start");
+  	/* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  XXCONO= cono.toInteger();
+			  xxCONO = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			XXCONO= program.LDAZD.CONO;
+			xxCONO = program.LDAZD.CONO;
 		}
-    logger.info("cono=" + cono + " XXCONO=" + XXCONO);
+    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
-  	logger.info("divi=" + divi);
+  	logger.debug("divi=" + divi);
     if (divi == "?") {
       divi = "";
     }
     if (divi.isEmpty()) {
-      divi = program.LDAZD.DIVI; // get from M3 current DIVI using, not sure if this will work, if not then force them to send it
-  	  logger.info("divi=" + divi);
+      divi = program.LDAZD.DIVI;
+  	  logger.debug("divi=" + divi);
     } 
   	prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
   	if (prpn == "?") {
   	  prpn = "";
   	}
-    logger.info("prpn=" + prpn);
+    logger.debug("prpn=" + prpn);
     pyon = mi.inData.get("PYON") == null ? '' : mi.inData.get("PYON").trim();
   	if (pyon == "?") {
   	  pyon = "";
   	}
-    logger.info("pyon=" + pyon);
+    logger.debug("pyon=" + pyon);
     asts = mi.inData.get("ASTS") == null ? '' : mi.inData.get("ASTS").trim();
-  	logger.info("asts=" + asts);
+  	logger.debug("asts=" + asts);
     if (asts == "?") {
   	  asts = "";
-  	  logger.info("asts=" + asts);
+  	  logger.debug("asts=" + asts);
     }
     appr = mi.inData.get("APPR") == null ? '' : mi.inData.get("APPR").trim();
-  	logger.info("appr=" + appr);
+  	logger.debug("appr=" + appr);
     if (appr == "?") {
   	  appr = "";
-  	  logger.info("appr=" + appr);
+  	  logger.debug("appr=" + appr);
     }
     grpi = mi.inData.get("GRPI") == null ? '' : mi.inData.get("GRPI").trim();
-  	logger.info("grpi=" + grpi);
+  	logger.debug("grpi=" + grpi);
     if (grpi == "?") {
   	  grpi = "";
-  	  logger.info("grpi=" + grpi);
+  	  logger.debug("grpi=" + grpi);
     }
     apam = mi.inData.get("APAM") == null ? '' : mi.inData.get("APAM").trim();
-  	logger.info("apam=" + apam);
+  	logger.debug("apam=" + apam);
     if (apam == "?") {
   	  apam = "";
   	}
-    logger.info("apam=" + apam);  	
+    logger.debug("apam=" + apam);  	
     if (prpn.isEmpty()) {
       mi.error("Payment Proposal Number must be entered");
       return;
@@ -156,29 +156,29 @@
       mi.error("Approved Amount must be entered");
       return;
     }
-    // - validate asts
+    /* validate asts */
     if (!asts.equals("Sent for Approval") && !asts.equals("Under Approval") && !asts.equals("Under Cancellation") && !asts.equals("Approved") && !asts.equals("Declined") && !asts.equals("Rejected") && !asts.equals("Cancelled")) {
       mi.error("Invalid Approval Status");
       return;
     }
-    // - validate approver
+    /* validate approver */
     if (!appr.isEmpty()) {
       DBAction queryCMNUSR = database.table("CMNUSR").index("00").build();
       DBContainer CMNUSR = queryCMNUSR.getContainer();
       CMNUSR.set("JUCONO", 0);
       CMNUSR.set("JUDIVI", "");
-      CMNUSR.set("JUUSID", appr); //THEOT is a valid user on Madison to test with
+      CMNUSR.set("JUUSID", appr);
       if (!queryCMNUSR.read(CMNUSR)) {
         mi.error("Approver is invalid");
         return;
       }
     }
-    logger.info("Valid approver detected");
-    // - Update Payment Proposal Number record if exists
-    logger.info("About to Update record in the database but will do it while checking if record exits first");
+    logger.debug("Valid approver detected");
+    /* Update Payment Proposal Number record if exists */
+    logger.debug("About to Update record in the database but will do it while checking if record exits first");
     DBAction query = database.table("EXTAPP").index("00").build();
     DBContainer container = query.getContainer();
-    container.set("EXCONO", XXCONO);
+    container.set("EXCONO", xxCONO);
     container.set("EXDIVI", divi);
     container.set("EXPRPN", Long.parseLong(prpn));
     container.set("EXPYON", Integer.parseInt(pyon));

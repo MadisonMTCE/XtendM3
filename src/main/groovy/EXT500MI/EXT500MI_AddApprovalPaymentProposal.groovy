@@ -35,7 +35,7 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240228  TTATAROGLOU   Developed WKF014- Write EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Write EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -51,9 +51,11 @@ public class Add extends ExtendM3Transaction {
   private final ProgramAPI program;
   private final IonAPI ion;
   
-  //Input fields must be all strings then covert to data type required to adding to database
+ /*
+  * Input fields
+  */
   private String cono;
-  private int XXCONO;
+  private int xxCONO;
   private String divi;
   private String prpn;
   private String pyon;
@@ -64,7 +66,7 @@ public class Add extends ExtendM3Transaction {
 
  /*
   * Add Approval Payment Proposal extension table row
- */
+  */
   public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
     this.mi = mi;
     this.database = database;
@@ -75,66 +77,66 @@ public class Add extends ExtendM3Transaction {
   }
   
   public void main() {
-    logger.info("main() Start");
-  	//Validate input fields
+    logger.debug("main() Start");
+  	/* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  XXCONO= cono.toInteger();
+			  xxCONO = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			XXCONO= program.LDAZD.CONO;
+			xxCONO = program.LDAZD.CONO;
 		}
-    logger.info("cono=" + cono + " XXCONO=" + XXCONO);
+    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
-  	logger.info("divi=" + divi);
+  	logger.debug("divi=" + divi);
     if (divi == "?") {
       divi = "";
     }
     if (divi.isEmpty()) {
-      divi = program.LDAZD.DIVI; // get from M3 current DIVI using, not sure if this will work, if not then force them to send it
-  	  logger.info("divi=" + divi);
+      divi = program.LDAZD.DIVI;
+  	  logger.debug("divi=" + divi);
     } 
   	prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
   	if (prpn == "?") {
   	  prpn = "";
   	}
-    logger.info("prpn=" + prpn);
+    logger.debug("prpn=" + prpn);
     pyon = mi.inData.get("PYON") == null ? '' : mi.inData.get("PYON").trim();
   	if (pyon == "?") {
   	  pyon = "";
   	}
-    logger.info("pyon=" + pyon);
+    logger.debug("pyon=" + pyon);
     asts = mi.inData.get("ASTS") == null ? '' : mi.inData.get("ASTS").trim();
-  	logger.info("asts=" + asts);
+  	logger.debug("asts=" + asts);
     if (asts == "?") {
   	  asts = "";
-  	  logger.info("asts=" + asts);
+  	  logger.debug("asts=" + asts);
     }
     appr = mi.inData.get("APPR") == null ? '' : mi.inData.get("APPR").trim();
-  	logger.info("appr=" + appr);
+  	logger.debug("appr=" + appr);
     if (appr == "?") {
   	  appr = "";
-  	  logger.info("appr=" + appr);
+  	  logger.debug("appr=" + appr);
     }
     grpi = mi.inData.get("GRPI") == null ? '' : mi.inData.get("GRPI").trim();
-  	logger.info("grpi=" + grpi);
+  	logger.debug("grpi=" + grpi);
     if (grpi == "?") {
   	  grpi = "";
-  	  logger.info("grpi=" + grpi);
+  	  logger.debug("grpi=" + grpi);
     }
     apam = mi.inData.get("APAM") == null ? '' : mi.inData.get("APAM").trim();
-  	logger.info("apam=" + apam);
+  	logger.debug("apam=" + apam);
     if (apam == "?") {
   	  apam = "";
   	}
-    logger.info("apam=" + apam);  	
+    logger.debug("apam=" + apam);  	
     if (prpn.isEmpty()) {
       mi.error("Payment Proposal Number must be entered");
       return;
@@ -155,28 +157,28 @@ public class Add extends ExtendM3Transaction {
       mi.error("Approved Amount must be entered");
       return;
     }
-    // - validate asts
+    /* validate asts */
     if (!asts.equals("Sent for Approval") && !asts.equals("Under Approval") && !asts.equals("Under Cancellation") && !asts.equals("Approved") && !asts.equals("Declined") && !asts.equals("Rejected") && !asts.equals("Cancelled")) {
       mi.error("Invalid Approval Status");
       return;
     }
-    // - validate approver
+    /* validate approver */
     if (!appr.isEmpty()) {
       DBAction queryCMNUSR = database.table("CMNUSR").index("00").build();
       DBContainer CMNUSR = queryCMNUSR.getContainer();
       CMNUSR.set("JUCONO", 0);
       CMNUSR.set("JUDIVI", "");
-      CMNUSR.set("JUUSID", appr); //THEOT is a valid user on Madison to test with
+      CMNUSR.set("JUUSID", appr);
       if (!queryCMNUSR.read(CMNUSR)) {
         mi.error("Approver is invalid.");
         return;
       }
     }
-    logger.info("Valid approver detected");
-    // - validate Payment Proposal Number record does not already exists
+    logger.debug("Valid approver detected");
+    /* validate Payment Proposal Number record does not already exists */
     DBAction queryEXTAPP = database.table("EXTAPP").index("00").build();
     DBContainer EXTAPPRECORD = queryEXTAPP.getContainer();
-    EXTAPPRECORD.set("EXCONO", XXCONO);
+    EXTAPPRECORD.set("EXCONO", xxCONO);
     EXTAPPRECORD.set("EXDIVI", divi);
     EXTAPPRECORD.set("EXPRPN", Long.parseLong(prpn));
     EXTAPPRECORD.set("EXPYON", Integer.parseInt(pyon));
@@ -184,11 +186,11 @@ public class Add extends ExtendM3Transaction {
       mi.error("An approval entry already exists for this transaction");
       return;
     }
-    logger.info("Payment Proposal Number record does not already exist in the database");
-    // - validate prpn is in FPSUGH table
+    logger.debug("Payment Proposal Number record does not already exist in the database");
+    /* validate prpn is in FPSUGH table */
     DBAction queryFPSUGH = database.table("FPSUGH").index("00").build();
     DBContainer FPSUGH = queryFPSUGH.getContainer();
-    FPSUGH.set("P1CONO", XXCONO);
+    FPSUGH.set("P1CONO", xxCONO);
     FPSUGH.set("P1DIVI", divi);
     FPSUGH.set("P1PRPN", Long.parseLong(prpn));
     FPSUGH.set("P1PYON", Integer.parseInt(pyon));
@@ -196,8 +198,8 @@ public class Add extends ExtendM3Transaction {
       mi.error("Transaction is invalid");
       return;
     }
-    logger.info("prpn exists in FPSUGH table");
-    logger.info("About to call writeEXTAPP() function");
+    logger.debug("prpn exists in FPSUGH table");
+    logger.debug("About to call writeEXTAPP() function");
     writeEXTAPP();
   }
   /*
@@ -205,18 +207,18 @@ public class Add extends ExtendM3Transaction {
   *
   */
   void writeEXTAPP() {
-	  logger.info("writeEXTAPP() Start");
-    //Current date and time
+	  logger.debug("writeEXTAPP() Start");
+    /* Current date and time */
   	ZoneId zid = ZoneId.of("Australia/Brisbane"); 
     LocalDateTime currentDateTimeNow = LocalDateTime.now(zid);
     int currentDate = currentDateTimeNow.format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
     int currentYear = currentDateTimeNow.format(DateTimeFormatter.ofPattern("yyyy")).toInteger();
     int currentTime = Integer.valueOf(currentDateTimeNow.format(DateTimeFormatter.ofPattern("HHmmss")));
   	
-	  //Write record
+	  /* Write record */
     DBAction actionEXTAPP = database.table("EXTAPP").build();
   	DBContainer EXTAPP = actionEXTAPP.getContainer();
-  	EXTAPP.set("EXCONO", XXCONO);
+  	EXTAPP.set("EXCONO", xxCONO);
   	EXTAPP.set("EXDIVI", divi);
   	EXTAPP.set("EXPRPN", Integer.parseInt(prpn));
   	EXTAPP.set("EXPYON", Integer.parseInt(pyon));
@@ -230,9 +232,9 @@ public class Add extends ExtendM3Transaction {
   	EXTAPP.set("EXRGTM", currentTime);
   	EXTAPP.set("EXCHNO", 0);
   	EXTAPP.set("EXCHID", program.getUser());
-    logger.info("writeEXTAPP() About to insert to EXTAPP");
+    logger.debug("writeEXTAPP() About to insert to EXTAPP");
   	actionEXTAPP.insert(EXTAPP, recordExists);
-    logger.info("writeEXTAPP() After insert to EXTAPP");
+    logger.debug("writeEXTAPP() After insert to EXTAPP");
 	}
   /*
    * recordExists - return record already exists error message to the MI

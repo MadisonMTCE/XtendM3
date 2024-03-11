@@ -33,7 +33,7 @@
  /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240301  TTATAROGLOU   Developed WKF014- Delete EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Delete EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -47,16 +47,16 @@ public class Delete extends ExtendM3Transaction {
   private final ProgramAPI program;
   private final IonAPI ion;
   
-  //Input fields must be all strings then convert to data type required to adding to database
+  /* Input fields */
   private String cono;
-  private int XXCONO;
+  private int xxCONO;
   private String divi;
   private String prpn;
   private String pyon;
   
  /*
   * Delete Approval Payment Proposal extension table row
- */
+  */
   public Delete(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
     this.mi = mi;
     this.database = database;
@@ -68,42 +68,42 @@ public class Delete extends ExtendM3Transaction {
   }
   
   public void main() {
-    logger.info("main() Start");
-  	//Validate input fields
+    logger.debug("main() Start");
+  	/* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  XXCONO= cono.toInteger();
+			  xxCONO = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			XXCONO= program.LDAZD.CONO;
+			xxCONO = program.LDAZD.CONO;
 		}
-    logger.info("cono=" + cono + " XXCONO=" + XXCONO);
+    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
-  	logger.info("divi=" + divi);
+  	logger.debug("divi=" + divi);
     if (divi == "?") {
       divi = "";
     }
     if (divi.isEmpty()) {
-      divi = program.LDAZD.DIVI; // get from M3 current DIVI using, not sure if this will work, if not then force them to send it
-  	  logger.info("divi=" + divi);
+      divi = program.LDAZD.DIVI;
+  	  logger.debug("divi=" + divi);
     } 
   	prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
   	if (prpn == "?") {
   	  prpn = "";
   	}
-    logger.info("prpn=" + prpn);
+    logger.debug("prpn=" + prpn);
     pyon = mi.inData.get("PYON") == null ? '' : mi.inData.get("PYON").trim();
   	if (pyon == "?") {
   	  pyon = "";
   	}
-    logger.info("pyon=" + pyon);  	
+    logger.debug("pyon=" + pyon);  	
     if (prpn.isEmpty()) {
       mi.error("Payment Proposal Number must be entered");
       return;
@@ -112,11 +112,11 @@ public class Delete extends ExtendM3Transaction {
       mi.error("Payment Order Number must be entered");
       return;
     }
-    // - Delete Payment Proposal Number record if exists
-    logger.info("About to Delete record in the database but will do it while checking if record exits first");
+    /* Delete Payment Proposal Number record if exists */
+    logger.debug("About to Delete record in the database but will do it while checking if record exits first");
   	DBAction queryEXTAPP = database.table("EXTAPP").index("00").build();
     DBContainer EXTAPP = queryEXTAPP.getContainer();
-    EXTAPP.set("EXCONO", XXCONO);
+    EXTAPP.set("EXCONO", xxCONO);
     EXTAPP.set("EXDIVI", divi);
     EXTAPP.set("EXPRPN", Long.parseLong(prpn));
     EXTAPP.set("EXPYON", Integer.parseInt(pyon));

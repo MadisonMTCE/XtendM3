@@ -34,7 +34,7 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240301  TTATAROGLOU   Developed WKF014- GetDailyAmount which is the sum of the APAM total for every 
+ *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- GetDailyAmount which is the sum of the APAM total for every 
  *                                          row in EXTAPP Approval Payment Proposal where row contains a CONO, GRPI and 
  *                                          DATE as a basis for Payments Approval (Payments) Change Request.
  *
@@ -48,16 +48,16 @@ public class GetDailyAmount extends ExtendM3Transaction {
   private final ProgramAPI program;
   private final IonAPI ion;
 
-  //Input fields
+  /* Input fields */
   private String cono;
-  private int XXCONO;
+  private int xxCONO;
   private String grpi;
   
-  // For getting data on closure method
+  /* For getting data on closure method */
   private String apam;
   private String date;
   
-  // List used of EXXAPP records used to calculate output field
+  /* lst used of EXXAPP records used to calculate output field */
   private List lstEXTAPP;
    
  /*
@@ -74,51 +74,51 @@ public class GetDailyAmount extends ExtendM3Transaction {
   }
   
   public void main() {
-  	logger.info("main() Start");
-  	//Validate input fields
+  	logger.debug("main() Start");
+  	/* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
 	if (!cono.isEmpty()) {
 		if (cono.isInteger()){
-			XXCONO= cono.toInteger();
-			// - validate approver			
+			xxCONO = cono.toInteger();
+			/* validate approver */			
 			DBAction queryCMNCMP = database.table("CMNCMP").index("00").build();
 			DBContainer CMNCMP = queryCMNCMP.getContainer();
-			CMNCMP.set("JICONO", XXCONO);
+			CMNCMP.set("JICONO", xxCONO);
 			if (!queryCMNCMP.read(CMNCMP)) {
 				mi.error("CONO is valid");
 				return;
 			}
-			logger.info("Valid CONO detected");
+			logger.debug("Valid CONO detected");
 		} else {
 			mi.error("Company " + cono + " is invalid");
 			return;
 		}
 	} else {
-		XXCONO= program.LDAZD.CONO;
+		xxCONO = program.LDAZD.CONO;
 	}
-	logger.info("cono=" + cono + " XXCONO=" + XXCONO);
+	logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
 	grpi = mi.inData.get("GRPI") == null ? '' : mi.inData.get("GRPI").trim();
-  	logger.info("grpi=" + grpi);
+  	logger.debug("grpi=" + grpi);
 	if (grpi == "?") {
 		grpi = "";
-		logger.info("grpi=" + grpi);
+		logger.debug("grpi=" + grpi);
 	}
 	if (grpi.isEmpty()) {
 		mi.error("An Approval Group must be supplied");
 		return;
 	}
-	logger.info("Valid GRPI detected");
+	logger.debug("Valid GRPI detected");
 	
-	//Perform Query
+	/* Perform Query */
 	ZoneId zid = ZoneId.of("Australia/Brisbane");
 	int currentDate = LocalDate.now(zid).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
-	logger.info("Will now perform query XXCONO=" + XXCONO + " grpi=" + grpi + " currentDate=" + currentDate);
+	logger.debug("Will now perform query xxCONO=" + xxCONO + " grpi=" + grpi + " currentDate=" + currentDate);
 	DBAction queryEXTAPPRECORDS = database.table("EXTAPP").index("20").selection("EXCONO", "EXGRPI", "EXDATE", "EXASTS").build();
 	DBContainer EXTAPPRECORDS = queryEXTAPPRECORDS.getContainer();
-	EXTAPPRECORDS.set("EXCONO", XXCONO);
+	EXTAPPRECORDS.set("EXCONO", xxCONO);
 	EXTAPPRECORDS.set("EXGRPI", grpi);
 	EXTAPPRECORDS.set("EXASTS", "Approved");
 	EXTAPPRECORDS.set("EXDATE", currentDate);
@@ -127,7 +127,7 @@ public class GetDailyAmount extends ExtendM3Transaction {
 		mi.error("Query is invalid.");
 		return;
 	}
-	logger.info("lstEXTAPP.size()=" + lstEXTAPP.size());
+	logger.debug("lstEXTAPP.size()=" + lstEXTAPP.size());
 	double totalApam = 0;
 	int extAppRecordDate;
 	String extAppRecordAsts;
@@ -153,8 +153,8 @@ public class GetDailyAmount extends ExtendM3Transaction {
 		return;
 	}
     
-	//Output results
-	mi.outData.put("CONO", XXCONO.toString());
+	/* Output results */
+	mi.outData.put("CONO", xxCONO.toString());
 	mi.outData.put("GRPI", grpi);
 	mi.outData.put("DATE", currentDate.toString());
 	mi.outData.put("APAM", totalApam.toString());

@@ -148,7 +148,7 @@ public class Add extends ExtendM3Transaction {
   	EXTOOL.set("EXRGDT", currentDate);
   	EXTOOL.set("EXRGTM", currentTime);
   	EXTOOL.set("EXLMDT", currentDate);
-  	EXTOOL.set("EXCHNO", 0);
+  	EXTOOL.set("EXCHNO", 1);
   	EXTOOL.set("EXCHID", program.getUser());
   	actionEXTOOL.insert(EXTOOL, recordExists);
 	}

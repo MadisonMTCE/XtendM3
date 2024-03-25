@@ -35,7 +35,9 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Write EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240322  RKROPP        Changes to set default values for input parameters, changes to make all variables 
+ *                                          lowerCamelCase, change to remove duplicate validation of existing record in EXTAPP.         
+ *MGMCAW-1756       20240311  RKROPP        Developed WKF014- Write EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -52,18 +54,18 @@ public class Add extends ExtendM3Transaction {
   private final IonAPI ion;
   
  /*
-  * Input fields
+  * Input fields with Default Values
   */
-  private String cono;
-  private int xxCONO;
-  private String divi;
-  private String prpn;
-  private String pyon;
-  private String asts;
-  private String appr;
-  private String grpi;
-  private String apam;
-
+  private String cono = "0";
+  private int xxCono = 0;
+  private String divi = "0";
+  private String prpn = "0";
+  private String pyon = "0";
+  private String asts = "";
+  private String appr = "";
+  private String grpi = "";
+  private String apam = "0";
+    
  /*
   * Add Approval Payment Proposal extension table row
   */
@@ -78,22 +80,22 @@ public class Add extends ExtendM3Transaction {
   
   public void main() {
     logger.debug("main() Start");
-  	/* Validate input fields */
+    /* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
   	if (cono == "?") {
   	  cono = "";
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  xxCONO = cono.toInteger();
+			  xxCono = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			xxCONO = program.LDAZD.CONO;
+			xxCono = program.LDAZD.CONO;
 		}
-    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
+    logger.debug("cono=" + cono + " xxCono=" + xxCono);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
   	logger.debug("divi=" + divi);
     if (divi == "?") {
@@ -164,37 +166,25 @@ public class Add extends ExtendM3Transaction {
     }
     /* validate approver */
     if (!appr.isEmpty()) {
-      DBAction queryCMNUSR = database.table("CMNUSR").index("00").build();
-      DBContainer CMNUSR = queryCMNUSR.getContainer();
-      CMNUSR.set("JUCONO", 0);
-      CMNUSR.set("JUDIVI", "");
-      CMNUSR.set("JUUSID", appr);
-      if (!queryCMNUSR.read(CMNUSR)) {
+      DBAction queryCmnUsr = database.table("CMNUSR").index("00").build();
+      DBContainer cmnUsr = queryCmnUsr.getContainer();
+      cmnUsr.set("JUCONO", 0);
+      cmnUsr.set("JUDIVI", "");
+      cmnUsr.set("JUUSID", appr);
+      if (!queryCmnUsr.read(cmnUsr)) {
         mi.error("Approver is invalid.");
         return;
       }
     }
     logger.debug("Valid approver detected");
-    /* validate Payment Proposal Number record does not already exists */
-    DBAction queryEXTAPP = database.table("EXTAPP").index("00").build();
-    DBContainer EXTAPPRECORD = queryEXTAPP.getContainer();
-    EXTAPPRECORD.set("EXCONO", xxCONO);
-    EXTAPPRECORD.set("EXDIVI", divi);
-    EXTAPPRECORD.set("EXPRPN", Long.parseLong(prpn));
-    EXTAPPRECORD.set("EXPYON", Integer.parseInt(pyon));
-    if (queryEXTAPP.read(EXTAPPRECORD)) {
-      mi.error("An approval entry already exists for this transaction");
-      return;
-    }
-    logger.debug("Payment Proposal Number record does not already exist in the database");
     /* validate prpn is in FPSUGH table */
-    DBAction queryFPSUGH = database.table("FPSUGH").index("00").build();
-    DBContainer FPSUGH = queryFPSUGH.getContainer();
-    FPSUGH.set("P1CONO", xxCONO);
-    FPSUGH.set("P1DIVI", divi);
-    FPSUGH.set("P1PRPN", Long.parseLong(prpn));
-    FPSUGH.set("P1PYON", Integer.parseInt(pyon));
-    if (!queryFPSUGH.read(FPSUGH)) {
+    DBAction queryFpsugh = database.table("FPSUGH").index("00").build();
+    DBContainer fpsugh = queryFpsugh.getContainer();
+    fpsugh.set("P1CONO", xxCono);
+    fpsugh.set("P1DIVI", divi);
+    fpsugh.set("P1PRPN", Long.parseLong(prpn));
+    fpsugh.set("P1PYON", Integer.parseInt(pyon));
+    if (!queryFpsugh.read(fpsugh)) {
       mi.error("Transaction is invalid");
       return;
     }
@@ -216,24 +206,24 @@ public class Add extends ExtendM3Transaction {
     int currentTime = Integer.valueOf(currentDateTimeNow.format(DateTimeFormatter.ofPattern("HHmmss")));
   	
 	  /* Write record */
-    DBAction actionEXTAPP = database.table("EXTAPP").build();
-  	DBContainer EXTAPP = actionEXTAPP.getContainer();
-  	EXTAPP.set("EXCONO", xxCONO);
-  	EXTAPP.set("EXDIVI", divi);
-  	EXTAPP.set("EXPRPN", Integer.parseInt(prpn));
-  	EXTAPP.set("EXPYON", Integer.parseInt(pyon));
-    EXTAPP.set("EXINYR", currentYear);
-    EXTAPP.set("EXASTS", asts);
-    EXTAPP.set("EXAPPR", appr);
-    EXTAPP.set("EXGRPI", grpi);
-    EXTAPP.set("EXDATE", currentDate);
-    EXTAPP.set("EXAPAM", Double.parseDouble(apam));
-  	EXTAPP.set("EXRGDT", currentDate);
-  	EXTAPP.set("EXRGTM", currentTime);
-  	EXTAPP.set("EXCHNO", 0);
-  	EXTAPP.set("EXCHID", program.getUser());
+    DBAction actionExtApp = database.table("EXTAPP").build();
+  	DBContainer extApp = actionExtApp.getContainer();
+  	extApp.set("EXCONO", xxCono);
+  	extApp.set("EXDIVI", divi);
+  	extApp.set("EXPRPN", Integer.parseInt(prpn));
+  	extApp.set("EXPYON", Integer.parseInt(pyon));
+    extApp.set("EXINYR", currentYear);
+    extApp.set("EXASTS", asts);
+    extApp.set("EXAPPR", appr);
+    extApp.set("EXGRPI", grpi);
+    extApp.set("EXDATE", currentDate);
+    extApp.set("EXAPAM", Double.parseDouble(apam));
+  	extApp.set("EXRGDT", currentDate);
+  	extApp.set("EXRGTM", currentTime);
+  	extApp.set("EXCHNO", 0);
+  	extApp.set("EXCHID", program.getUser());
     logger.debug("writeEXTAPP() About to insert to EXTAPP");
-  	actionEXTAPP.insert(EXTAPP, recordExists);
+  	actionExtApp.insert(extApp, recordExists);
     logger.debug("writeEXTAPP() After insert to EXTAPP");
 	}
   /*
@@ -241,6 +231,6 @@ public class Add extends ExtendM3Transaction {
    *
   */
   Closure recordExists = {
-	  mi.error("Record already exists");
+	  mi.error("An approval entry already exists for this transaction");
   }
 }

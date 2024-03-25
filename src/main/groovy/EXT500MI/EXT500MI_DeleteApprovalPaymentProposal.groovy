@@ -33,7 +33,9 @@
  /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Delete EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240322  RKROPP        Changes to set default values for input parameters, changes to make all variables 
+ *                                          lowerCamelCase.
+ *MGMCAW-1756       20240311  RKROPP        Developed WKF014- Delete EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -48,11 +50,11 @@ public class Delete extends ExtendM3Transaction {
   private final IonAPI ion;
   
   /* Input fields */
-  private String cono;
-  private int xxCONO;
-  private String divi;
-  private String prpn;
-  private String pyon;
+  private String cono = "0";
+  private int xxCono = 0;
+  private String divi = "0" ;
+  private String prpn = "0";
+  private String pyon = "0";
   
  /*
   * Delete Approval Payment Proposal extension table row
@@ -76,15 +78,15 @@ public class Delete extends ExtendM3Transaction {
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  xxCONO = cono.toInteger();
+			  xxCono = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			xxCONO = program.LDAZD.CONO;
+			xxCono = program.LDAZD.CONO;
 		}
-    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
+    logger.debug("cono=" + cono + " xxCono=" + xxCono);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
   	logger.debug("divi=" + divi);
     if (divi == "?") {
@@ -114,13 +116,13 @@ public class Delete extends ExtendM3Transaction {
     }
     /* Delete Payment Proposal Number record if exists */
     logger.debug("About to Delete record in the database but will do it while checking if record exits first");
-  	DBAction queryEXTAPP = database.table("EXTAPP").index("00").build();
-    DBContainer EXTAPP = queryEXTAPP.getContainer();
-    EXTAPP.set("EXCONO", xxCONO);
-    EXTAPP.set("EXDIVI", divi);
-    EXTAPP.set("EXPRPN", Long.parseLong(prpn));
-    EXTAPP.set("EXPYON", Integer.parseInt(pyon));
-    if (!queryEXTAPP.readLock(EXTAPP, deleteCallBack)) {
+  	DBAction queryExtApp = database.table("EXTAPP").index("00").build();
+    DBContainer extApp = queryExtApp.getContainer();
+    extApp.set("EXCONO", xxCono);
+    extApp.set("EXDIVI", divi);
+    extApp.set("EXPRPN", Long.parseLong(prpn));
+    extApp.set("EXPYON", Integer.parseInt(pyon));
+    if (!queryExtApp.readLock(extApp, deleteCallBack)) {
       mi.error("An approval entry does not exist for this transaction.");
       return;
     }

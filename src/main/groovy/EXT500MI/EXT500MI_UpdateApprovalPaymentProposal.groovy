@@ -34,7 +34,10 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Update EXTAPP Approval Payment Proposal as a basis for 
+ *MGMCAW-1756       20240322  RKROPP        Changes to set default values for input parameters, changes to make all variables 
+ *                                          lowerCamelCase, change to remove duplicate validation of existing record in EXTAPP,
+ *                                          changes to add missing update of audit trail fields LMDT CHNO CHID.
+ *MGMCAW-1756       20240311  RKROPP        Developed WKF014- Update EXTAPP Approval Payment Proposal as a basis for 
  *                                          Payments Approval (Payments) Change Request.
  *
  */
@@ -51,16 +54,19 @@
   private final ProgramAPI program;
   private final IonAPI ion;
   
-  /* Input fields */
-  private String cono;
-  private int xxCONO;
-  private String divi;
-  private String prpn;
-  private String pyon;
-  private String asts;
-  private String appr;
-  private String grpi;
-  private String apam;
+  /* Input fields with Default Values */
+  private String cono = "0";
+  private int xxCono = 0;
+  private String divi = "0";
+  private String prpn = "0";
+  private String pyon = "0";
+  private String asts = "";
+  private String appr = "";
+  private String grpi = "";
+  private String apam = "0";
+
+  /* For calculating CHNO */
+  private Integer chNo = 0;
   
  /*
   * Update Approval Payment Proposal extension table row
@@ -84,15 +90,15 @@
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  xxCONO = cono.toInteger();
+			  xxCono = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			xxCONO = program.LDAZD.CONO;
+			xxCono = program.LDAZD.CONO;
 		}
-    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
+    logger.debug("cono=" + cono + " xxCono=" + xxCono);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
   	logger.debug("divi=" + divi);
     if (divi == "?") {
@@ -163,12 +169,12 @@
     }
     /* validate approver */
     if (!appr.isEmpty()) {
-      DBAction queryCMNUSR = database.table("CMNUSR").index("00").build();
-      DBContainer CMNUSR = queryCMNUSR.getContainer();
-      CMNUSR.set("JUCONO", 0);
-      CMNUSR.set("JUDIVI", "");
-      CMNUSR.set("JUUSID", appr);
-      if (!queryCMNUSR.read(CMNUSR)) {
+      DBAction queryCmnUsr = database.table("CMNUSR").index("00").build();
+      DBContainer cmnUsr = queryCmnUsr.getContainer();
+      cmnUsr.set("JUCONO", 0);
+      cmnUsr.set("JUDIVI", "");
+      cmnUsr.set("JUUSID", appr);
+      if (!queryCmnUsr.read(cmnUsr)) {
         mi.error("Approver is invalid");
         return;
       }
@@ -178,10 +184,14 @@
     logger.debug("About to Update record in the database but will do it while checking if record exits first");
     DBAction query = database.table("EXTAPP").index("00").build();
     DBContainer container = query.getContainer();
-    container.set("EXCONO", xxCONO);
+    container.set("EXCONO", xxCono);
     container.set("EXDIVI", divi);
     container.set("EXPRPN", Long.parseLong(prpn));
     container.set("EXPYON", Integer.parseInt(pyon));
+    if (query.read(container)) {
+      chNo = container.get("EXCHNO"); // calculate next CHNO
+      chNo++;
+    }
     if (!query.readLock(container, updateCallBack)) {
       mi.error("An approval entry does not exist for this transaction");
       return;
@@ -203,7 +213,10 @@
     lockedResult.set("EXAPAM", Double.parseDouble(apam));
     lockedResult.set("EXASTS", asts);
     if (asts == "Approved")
-		lockedResult.set("EXDATE", currentDate);
+		 lockedResult.set("EXDATE", currentDate);
+    lockedResult.set("EXLMDT", currentDate);
+    lockedResult.set("EXCHID", program.getUser());
+    lockedResult.set("EXCHNO", chNo);
     lockedResult.update();
   }
 }

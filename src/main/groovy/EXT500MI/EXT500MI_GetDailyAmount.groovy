@@ -34,7 +34,9 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- GetDailyAmount which is the sum of the APAM total for every 
+ *MGMCAW-1756       20240325  RKROPP        Changes to set default values for input parameters, changes to make all variables 
+ *                                          lowerCamelCase, replaced def with typed variable in listExtApp callback function.
+ *MGMCAW-1756       20240311  RKROPP        Developed WKF014- GetDailyAmount which is the sum of the APAM total for every 
  *                                          row in EXTAPP Approval Payment Proposal where row contains a CONO, GRPI and 
  *                                          DATE as a basis for Payments Approval (Payments) Change Request.
  *
@@ -48,17 +50,17 @@ public class GetDailyAmount extends ExtendM3Transaction {
   private final ProgramAPI program;
   private final IonAPI ion;
 
-  /* Input fields */
-  private String cono;
-  private int xxCONO;
-  private String grpi;
+  /* Input fields with Default Values */
+  private String cono = "";
+  private int xxCono = 0;
+  private String grpi = "";
   
   /* For getting data on closure method */
   private String apam;
   private String date;
   
   /* lst used of EXXAPP records used to calculate output field */
-  private List lstEXTAPP;
+  private List lstExtApp;
    
  /*
   * GetDailyAmount which is the sum of the APAM total for every row in EXTAPP Approval Payment Proposal where row
@@ -82,12 +84,12 @@ public class GetDailyAmount extends ExtendM3Transaction {
   	}
 	if (!cono.isEmpty()) {
 		if (cono.isInteger()){
-			xxCONO = cono.toInteger();
+			xxCono = cono.toInteger();
 			/* validate approver */			
-			DBAction queryCMNCMP = database.table("CMNCMP").index("00").build();
-			DBContainer CMNCMP = queryCMNCMP.getContainer();
-			CMNCMP.set("JICONO", xxCONO);
-			if (!queryCMNCMP.read(CMNCMP)) {
+			DBAction queryCmnCmp = database.table("CMNCMP").index("00").build();
+			DBContainer cmnCmp = queryCmnCmp.getContainer();
+			cmnCmp.set("JICONO", xxCono);
+			if (!queryCmnCmp.read(cmnCmp)) {
 				mi.error("CONO is valid");
 				return;
 			}
@@ -97,9 +99,9 @@ public class GetDailyAmount extends ExtendM3Transaction {
 			return;
 		}
 	} else {
-		xxCONO = program.LDAZD.CONO;
+		xxCono = program.LDAZD.CONO;
 	}
-	logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
+	logger.debug("cono=" + cono + " xxCono=" + xxCono);
 	grpi = mi.inData.get("GRPI") == null ? '' : mi.inData.get("GRPI").trim();
   	logger.debug("grpi=" + grpi);
 	if (grpi == "?") {
@@ -115,31 +117,31 @@ public class GetDailyAmount extends ExtendM3Transaction {
 	/* Perform Query */
 	ZoneId zid = ZoneId.of("Australia/Brisbane");
 	int currentDate = LocalDate.now(zid).format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
-	logger.debug("Will now perform query xxCONO=" + xxCONO + " grpi=" + grpi + " currentDate=" + currentDate);
-	DBAction queryEXTAPPRECORDS = database.table("EXTAPP").index("20").selection("EXCONO", "EXGRPI", "EXDATE", "EXASTS").build();
-	DBContainer EXTAPPRECORDS = queryEXTAPPRECORDS.getContainer();
-	EXTAPPRECORDS.set("EXCONO", xxCONO);
-	EXTAPPRECORDS.set("EXGRPI", grpi);
-	EXTAPPRECORDS.set("EXASTS", "Approved");
-	EXTAPPRECORDS.set("EXDATE", currentDate);
-	lstEXTAPP = new ArrayList();
-	if (queryEXTAPPRECORDS.readAll(EXTAPPRECORDS, 2, 999, listEXTAPP) == 0) {  
+	logger.debug("Will now perform query xxCono=" + xxCono + " grpi=" + grpi + " currentDate=" + currentDate);
+	DBAction queryExtAppRecords = database.table("EXTAPP").index("20").selection("EXCONO", "EXGRPI", "EXDATE", "EXASTS").build();
+	DBContainer extAppRecords = queryExtAppRecords.getContainer();
+	extAppRecords.set("EXCONO", xxCono);
+	extAppRecords.set("EXGRPI", grpi);
+	extAppRecords.set("EXASTS", "Approved");
+	extAppRecords.set("EXDATE", currentDate);
+	lstExtApp = new ArrayList();
+	if (queryExtAppRecords.readAll(extAppRecords, 2, 999, listExtApp) == 0) {  
 		mi.error("Query is invalid.");
 		return;
 	}
-	logger.debug("lstEXTAPP.size()=" + lstEXTAPP.size());
+	logger.debug("lstExtApp.size()=" + lstExtApp.size());
 	double totalApam = 0;
 	int extAppRecordDate;
 	String extAppRecordAsts;
-	if (lstEXTAPP.size() == 1) {
-		Map<String, String> record1 = (Map<String, String>) lstEXTAPP[0];
+	if (lstExtApp.size() == 1) {
+		Map<String, String> record1 = (Map<String, String>) lstExtApp[0];
 		extAppRecordDate = Integer.parseInt(record1.EXDATE);
 		extAppRecordAsts = record1.EXASTS;
 		if ((currentDate == extAppRecordDate) && (extAppRecordAsts == "Approved"))
 			totalApam = Double.parseDouble(record1.EXAPAM);
-	} else if (lstEXTAPP.size() > 1) {
-		for (int j=0;j<lstEXTAPP.size();j++) {
-			Map<String, String> record2 = (Map<String, String>) lstEXTAPP[j];
+	} else if (lstExtApp.size() > 1) {
+		for (int j=0;j<lstExtApp.size();j++) {
+			Map<String, String> record2 = (Map<String, String>) lstExtApp[j];
 			extAppRecordDate = Integer.parseInt(record2.EXDATE);
 			extAppRecordAsts = record2.EXASTS;
 			if ((currentDate == extAppRecordDate) && (extAppRecordAsts == "Approved")) {	
@@ -148,13 +150,13 @@ public class GetDailyAmount extends ExtendM3Transaction {
 				totalApam = totalApam + currentRecordApam;
 			}
 		}
-	} else if (lstEXTAPP.size() == 0) {
+	} else if (lstExtApp.size() == 0) {
 		mi.error("No Record exist for this search criteria");
 		return;
 	}
     
 	/* Output results */
-	mi.outData.put("CONO", xxCONO.toString());
+	mi.outData.put("CONO", xxCono.toString());
 	mi.outData.put("GRPI", grpi);
 	mi.outData.put("DATE", currentDate.toString());
 	mi.outData.put("APAM", totalApam.toString());
@@ -162,15 +164,15 @@ public class GetDailyAmount extends ExtendM3Transaction {
  }
  
  /*
- * listEXTAPP - Callback function to return EXTAPP
+ * listExtApp - Callback function to return EXTAPP
  *
  */
- Closure<?> listEXTAPP = { DBContainer EXTAPPRECORDS ->
-	String apam = EXTAPPRECORDS.get("EXAPAM").toString().trim();
-	String asts = EXTAPPRECORDS.get("EXASTS").toString().trim();
-	String date = EXTAPPRECORDS.get("EXDATE").toString().trim();
-	def map = [EXAPAM: apam, EXASTS: asts, EXDATE: date];
-	lstEXTAPP.add(map);
+ Closure<?> listExtApp = { DBContainer extAppRecords ->
+	String apam = extAppRecords.get("EXAPAM").toString().trim();
+	String asts = extAppRecords.get("EXASTS").toString().trim();
+	String date = extAppRecords.get("EXDATE").toString().trim();
+	Map<String,String> params= ["EXAPAM":"${apam}".toString(), "EXASTS":"${asts}".toString(), "EXDATE":"${date}".toString()] // toString is needed to convert from gstring to string
+	lstExtApp.add(params);
  }
 
 }

@@ -33,7 +33,9 @@
 /*
  *Modification area - M3
  *Jira Nbr          Date      User id       Description
- *MGMCAW-1756       20240311  TTATAROGLOU   Developed WKF014- Get to get table row from table EXTAPP the Approval Payment
+ *MGMCAW-1756       20240322  RKROPP        Changes to set default values for input parameters, changes to make all variables 
+ *                                          lowerCamelCase.
+ *MGMCAW-1756       20240311  RKROPP        Developed WKF014- Get to get table row from table EXTAPP the Approval Payment
  *                                          Proposal record as a basis for Payments Approval (Payments) Change Request.
  *
  */
@@ -46,16 +48,18 @@ public class Get extends ExtendM3Transaction {
   private final ProgramAPI program;
   private final IonAPI ion;
   
-  //Input fields
-  private String cono;
-  private int xxCONO;
-  private String divi;
-  private String prpn;
-  private String pyon;
+ /* 
+ Input fields with Default Values
+ */
+  private String cono = "0";
+  private int xxCono = 0;
+  private String divi = "0";
+  private String prpn = "0";
+  private String pyon = "0";
    
  /*
   * Get Approval Payment Proposal table row
- */
+  */
   public Get(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
     this.mi = mi;
     this.database = database;
@@ -74,15 +78,15 @@ public class Get extends ExtendM3Transaction {
   	}
     if (!cono.isEmpty()) {
 		  if (cono.isInteger()){
-			  xxCONO = cono.toInteger();
+			  xxCono = cono.toInteger();
 			} else {
 				mi.error("Company " + cono + " is invalid");
 				return;
 		  }
 		} else {
-			xxCONO = program.LDAZD.CONO;
+			xxCono = program.LDAZD.CONO;
 		}
-    logger.debug("cono=" + cono + " xxCONO=" + xxCONO);
+    logger.debug("cono=" + cono + " xxCono=" + xxCono);
   	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
   	logger.debug("divi=" + divi);
     if (divi == "?") {
@@ -115,12 +119,12 @@ public class Get extends ExtendM3Transaction {
     logger.debug("Validation passed will now query EXTAPP table");
     DBAction query = database.table("EXTAPP").index("00").selection("EXASTS", "EXAPPR", "EXGRPI", "EXAPAM", "EXDATE").build();
     DBContainer container = query.getContainer();
-    container.set("EXCONO", xxCONO);
+    container.set("EXCONO", xxCono);
     container.set("EXDIVI", divi);
     container.set("EXPRPN", Integer.parseInt(prpn));
     container.set("EXPYON", Integer.parseInt(pyon));
     if (query.read(container)) {
-      mi.outData.put("CONO", xxCONO.toString());
+      mi.outData.put("CONO", xxCono.toString());
       mi.outData.put("DIVI", divi);
       mi.outData.put("PRPN", prpn);
       mi.outData.put("PYON", pyon);

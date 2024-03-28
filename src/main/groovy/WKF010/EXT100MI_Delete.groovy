@@ -26,10 +26,9 @@
 /*
  *Modification area - M3
  *Nbr             Date      User id     Description
- *WKF010         	20231220  KVERCO     Write/Update EXTOOH records as a basis for CO authorization process
+ *WKF010          20231220  KVERCO      Write/Update EXTOOH records as a basis for CO authorization process
  *
  */
-
 
  /**
   * Delete CO Authorisation extension table row
@@ -44,7 +43,6 @@
   
   //Input fields
   private String orno;
-  
   private int XXCONO;
   
  /*
@@ -57,7 +55,6 @@
   	this.logger = logger;
   	this.program = program;
 	  this.ion = ion;
-   
   }
   
   public void main() {
@@ -65,16 +62,13 @@
   	if (orno == "?") {
   	  orno = "";
   	}
-  	
-
   	// Validate input fields
   	if (orno.isEmpty()) {
       mi.error("CO number must be entered");
       return;
     }
     XXCONO = (Integer)program.getLDAZD().CONO;
-    
-  	DBAction queryEXTOOH = database.table("EXTOOH").index("00").selection("EXORNO").build();
+    DBAction queryEXTOOH = database.table("EXTOOH").index("00").selection("EXORNO").build();
     DBContainer EXTOOH = queryEXTOOH.getContainer();
     EXTOOH.set("EXCONO", XXCONO);
     EXTOOH.set("EXORNO", orno);
@@ -89,10 +83,7 @@
    *
   */
   Closure<?> deleteCallBack = { LockedResult lockedResult ->
-
     lockedResult.delete();
-  
-   
   }
   
 }

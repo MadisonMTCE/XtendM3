@@ -21,19 +21,10 @@
  ***************************************************************
  */
 
- import groovy.lang.Closure
- import java.time.LocalDate;
- import java.time.LocalDateTime;
- import java.time.format.DateTimeFormatter;
- import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
-
 /*
  *Modification area - M3
  *Nbr             Date      User id     Description
- *WKF010         	20231220  WYLLIEL     Write/Update EXTOOH records as a basis for CO authorization process
+ *WKF010         	20231220  KVERCO      Write/Update EXTOOH records as a basis for CO authorization process
  *
 */
 

@@ -35,7 +35,7 @@
  *
  */
 
-/*
+/**
 * - Write the record to EXTAPA
 */
 public class Add extends ExtendM3Transaction {
@@ -61,7 +61,7 @@ public class Add extends ExtendM3Transaction {
   private String cucd;
   private String apam;
 
- /*
+ /**
   * Add Approval Payment Proposal extension table row
   */
   public Add(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
@@ -70,7 +70,7 @@ public class Add extends ExtendM3Transaction {
   	this.miCaller = miCaller;
   	this.logger = logger;
   	this.program = program;
-	  this.ion = ion;
+    this.ion = ion;
   }
   
   public void main() {
@@ -176,7 +176,7 @@ public class Add extends ExtendM3Transaction {
     logger.debug("About to call writeEXTAPA() function");
     writeEXTAPA();
   }
-  /*
+  /**
   * Write Approval Payment Proposal audit trail record to table EXTAPA
   *
   */
@@ -189,7 +189,7 @@ public class Add extends ExtendM3Transaction {
     int currentTime = Integer.valueOf(currentDateTimeNow.format(DateTimeFormatter.ofPattern("HHmmss")));
     String timestamp = currentDateTimeNow.format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
 
-	  /* Write record */
+    /* Write record */
     DBAction actionEXTAPA = database.table("EXTAPA").build();
   	DBContainer EXTAPA = actionEXTAPA.getContainer();
   	EXTAPA.set("EXCONO", xxCONO);
@@ -209,7 +209,7 @@ public class Add extends ExtendM3Transaction {
   	EXTAPA.set("EXCHID", program.getUser());
   	actionEXTAPA.insert(EXTAPA, recordExists);
 	}
-  /*
+  /**
    * recordExists - return record already exists error message to the MI
    *
   */

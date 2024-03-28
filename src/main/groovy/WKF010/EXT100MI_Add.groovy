@@ -21,22 +21,16 @@
  ***************************************************************
  */
 
- import groovy.lang.Closure
+ import groovy.lang.Closure;
  
  import java.time.LocalDate;
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
- import java.time.ZoneId;
- import groovy.json.JsonSlurper;
- import java.math.BigDecimal;
- import java.math.RoundingMode;
- import java.text.DecimalFormat;
-
 
 /*
  *Modification area - M3
  *Nbr            Date      User id     Description
- *WKF010         20231220  WYLLIEL     Write/Update EXTOOH records as a basis for CO authorization process
+ *WKF010         20231220  KVERCO      Write/Update EXTOOH records as a basis for CO authorization process
  *
  */
 
@@ -118,15 +112,6 @@ public class Add extends ExtendM3Transaction {
   	  asts = "";
   	}
   	
-  	if (ptwf.isEmpty()) { ptwf = "";  }
-  	if (ovwf.isEmpty()) { ovwf = "";  }
-  	if (adwf.isEmpty()) { adwf = "";  }
-  	if (oblc.isEmpty()) { oblc = "0"; }
-  	if (usid.isEmpty()) { usid = "";  }
-  	if (orde.isEmpty()) { orde = "";  }
-  	if (appr.isEmpty()) { appr = "";  }
-  	if (asts.isEmpty()) { asts = "";  }
-
 	XXCONO = (Integer)program.LDAZD.CONO;
 
     // Validate input fields  	

@@ -71,7 +71,7 @@ public class Delete extends ExtendM3Transaction {
 	} else {
 		mi.error("Company " + cono + " is invalid");
 		return;
-		}
+	}
     } else {
 	xxCONO = program.LDAZD.CONO;
     }

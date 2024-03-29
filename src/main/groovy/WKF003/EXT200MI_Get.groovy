@@ -34,8 +34,9 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *ABF_R_200         20220405  RDRIESSEN   Mods BF0200- Write/Update EXTAPR records as a basis for PO authorization process
- *ABF_R_200         20220511  RDRIESSEN   Update for XtendM3 review feedback
- *ABF_R_200         20220603  RDRIESSEN   Bug fixing - populate XXCONO
+ *ABF_R_200         20220511  KVERCO      Update for XtendM3 review feedback
+ *ABF_R_200         20220603  KVERCO      Bug fixing - populate XXCONO
+ *WKF013            20240318  KVERCO      Add PURC field - as at time of approval workflow
  *
 */
 
@@ -76,7 +77,7 @@ public class Get extends ExtendM3Transaction {
     }
     XXCONO = (Integer)program.LDAZD.CONO;
     
-    DBAction query = database.table("EXTAPR").index("00").selection("EXCONO", "EXPUNO", "EXAPPR", "EXASTS").build();
+    DBAction query = database.table("EXTAPR").index("00").selection("EXCONO", "EXPUNO", "EXAPPR", "EXASTS", "EXPURC").build();
     DBContainer container = query.getContainer();
     container.set("EXCONO", XXCONO);
     container.set("EXPUNO", puno);
@@ -85,6 +86,7 @@ public class Get extends ExtendM3Transaction {
       mi.outData.put("PUNO", container.get("EXPUNO").toString());
       mi.outData.put("APPR", container.get("EXAPPR").toString());
       mi.outData.put("ASTS", container.get("EXASTS").toString());
+      mi.outData.put("PURC", container.get("EXPURC").toString());
       mi.write();
     } else {
       mi.error("Record does not exist in EXTAPR.");

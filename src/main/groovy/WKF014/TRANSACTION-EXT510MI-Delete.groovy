@@ -29,6 +29,7 @@
  *
  */
 
+
 public class Delete extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
@@ -51,37 +52,37 @@ public class Delete extends ExtendM3Transaction {
   public Delete(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.logger = logger;
-  	this.program = program;
-	  this.ion = ion;
+    this.miCaller = miCaller;
+    this.logger = logger;
+    this.program = program;
+    this.ion = ion;
    
   }
   
   public void main() {
-  	/* Validate input fields */
+    /* Validate input fields */
     cono = mi.inData.get("CONO") == null ? '' : mi.inData.get("CONO").trim();
-  	if (cono == "?") {
-  	  cono = "";
-  	}
+    if (cono == "?") {
+      cono = "";
+    }
     if (!cono.isEmpty()) {
-		  if (cono.isInteger()){
-			  xxCONO = cono.toInteger();
-			} else {
-				mi.error("Company " + cono + " is invalid");
-				return;
-		  }
-		} else {
-			xxCONO = program.LDAZD.CONO;
+	if (cono.isInteger()){
+        	xxCONO = cono.toInteger();
+	} else {
+		mi.error("Company " + cono + " is invalid");
+		return;
 		}
-  	divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
+    } else {
+	xxCONO = program.LDAZD.CONO;
+    }
+    divi = mi.inData.get("DIVI") == null ? '' : mi.inData.get("DIVI").trim();
     if (divi == "?") {
       divi = "";
     }
     if (divi.isEmpty()) {
       divi = program.LDAZD.DIVI;
     } 
-  	prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
+    prpn = mi.inData.get("PRPN") == null ? '' : mi.inData.get("PRPN").trim();
     if (prpn.isEmpty()) {
       mi.error("Payment Proposal Number must be entered");
       return;
@@ -98,7 +99,7 @@ public class Delete extends ExtendM3Transaction {
     }
     /* Delete Payment Proposal Number record if exists */
     logger.debug("About to Delete record in the database but will do it while checking if record exits first");
-  	DBAction queryEXTAPA = database.table("EXTAPA").index("00").build();
+    DBAction queryEXTAPA = database.table("EXTAPA").index("00").build();
     DBContainer EXTAPA = queryEXTAPA.getContainer();
     EXTAPA.set("EXCONO", xxCONO);
     EXTAPA.set("EXDIVI", divi);
@@ -116,9 +117,7 @@ public class Delete extends ExtendM3Transaction {
    *
   */
   Closure<?> deleteCallBack = { LockedResult lockedResult ->
-
     lockedResult.delete(); 
-   
   }
   
 }

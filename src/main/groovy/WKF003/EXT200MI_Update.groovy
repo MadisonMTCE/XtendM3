@@ -21,7 +21,8 @@
  ***************************************************************
  */
 
- import groovy.lang.Closure;
+ import groovy.lang.Closure
+
  import java.time.LocalDate;
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
@@ -35,7 +36,8 @@
  *Modification area - M3
  *Nbr               Date      User id     Description
  *ABF_R_200         20220405  RDRIESSEN   Mods BF0200- Update EXTAPR records as a basis for PO authorization process
- *ABF_R_200         20220511  RDRIESSEN   Update for XtendM3 review feedback
+ *ABF_R_200         20220511  KVERCO      Update for XtendM3 review feedback
+ *WKF013            20240318  KVERCO      Add PURC field - as at time of approval workflow
  *
  */
 
@@ -55,6 +57,7 @@
   private String puno;
   private String appr;
   private String asts;
+  private String purc;
   
   private int XXCONO;
   
@@ -82,7 +85,11 @@
   	if (appr == "?") {
   	  appr = "";
   	} 
-		XXCONO = (Integer)program.LDAZD.CONO;
+  	purc = mi.inData.get("PURC") == null ? '' : mi.inData.get("PURC").trim();
+  	if (purc == "?") {
+  	  purc = "";
+  	}
+  	XXCONO = (Integer)program.LDAZD.CONO;
 	
   	if (puno.isEmpty()) {
       mi.error("PO number must be entered");
@@ -115,7 +122,18 @@
         return;
       }
     }
-    
+    // - validate PO Creator
+    if (!purc.isEmpty()) {
+      DBAction queryCMNUSR = database.table("CMNUSR").index("00").build()
+      DBContainer CMNUSR = queryCMNUSR.getContainer();
+      CMNUSR.set("JUCONO", 0);
+      CMNUSR.set("JUDIVI", "");
+      CMNUSR.set("JUUSID", purc);
+      if (!queryCMNUSR.read(CMNUSR)) {
+        mi.error("PO Creator is invalid.");
+        return;
+      }
+    }    
     DBAction query = database.table("EXTAPR").index("00").build();
     DBContainer container = query.getContainer();
     container.set("EXCONO", XXCONO);
@@ -137,6 +155,9 @@
     
     lockedResult.set("EXASTS", asts);
     lockedResult.set("EXAPPR", appr);
+    if (!purc.isEmpty()) {
+      lockedResult.set("EXPURC", purc);
+    }
     lockedResult.set("EXCHNO", lockedResult.get("EXCHNO").toString().toInteger() +1);
     lockedResult.set("EXCHID", program.getUser());
     lockedResult.set("EXLMDT", currentDate);

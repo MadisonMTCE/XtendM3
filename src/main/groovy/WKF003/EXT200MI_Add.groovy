@@ -37,6 +37,7 @@
  *Nbr               Date      User id     Description
  *ABF_R_200         20220405  RDRIESSEN   Mods BF0200- Write/Update EXTAPR records as a basis for PO authorization process
  *ABF_R_200         20220511  RDRIESSEN   Update for XtendM3 review feedback
+ *WKF013            20240318  KRISTINAV   Add PURC field - as at time of approval workflow
  *
  */
 
@@ -55,6 +56,7 @@ public class Add extends ExtendM3Transaction {
   private String puno;
   private String appr;
   private String asts;
+  private String purc;
 
   private int XXCONO;
  
@@ -85,6 +87,11 @@ public class Add extends ExtendM3Transaction {
   	if (asts == "?") {
   	  asts = "";
   	} 
+  	purc = mi.inData.get("PURC") == null ? '' : mi.inData.get("PURC").trim();
+  	if (purc == "?") {
+  	  purc = "";
+  	} 
+
 		XXCONO = (Integer)program.LDAZD.CONO;
 
     // Validate input fields  	
@@ -122,13 +129,25 @@ public class Add extends ExtendM3Transaction {
         return;
       }
     }
-    writeEXTAPR(puno, appr, asts);
+    // - validate PO creator
+    if (!purc.isEmpty()) {
+      DBAction queryCMNUSR = database.table("CMNUSR").index("00").build();
+      DBContainer CMNUSR = queryCMNUSR.getContainer();
+      CMNUSR.set("JUCONO", 0);
+      CMNUSR.set("JUDIVI", "");
+      CMNUSR.set("JUUSID", purc);
+      if (!queryCMNUSR.read(CMNUSR)) {
+        mi.error("PO Creator is invalid.");
+        return;
+      }
+    }
+    writeEXTAPR(puno, appr, asts, purc);
   }
   /*
   * Write Purchase Authorisation extension table EXTAPR
   *
   */
-  void writeEXTAPR(String puno, String appr, String asts) {
+  void writeEXTAPR(String puno, String appr, String asts, purc) {
 	  //Current date and time
   	int currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd")).toInteger();
   	int currentTime = Integer.valueOf(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HHmmss")));
@@ -139,6 +158,7 @@ public class Add extends ExtendM3Transaction {
   	EXTAPR.set("EXPUNO", puno);
   	EXTAPR.set("EXAPPR", appr);
   	EXTAPR.set("EXASTS", asts);
+  	EXTAPR.set("EXPURC", purc);
   	EXTAPR.set("EXRGDT", currentDate);
   	EXTAPR.set("EXRGTM", currentTime);
   	EXTAPR.set("EXLMDT", currentDate);

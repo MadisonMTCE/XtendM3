@@ -36,11 +36,8 @@
  public class Delete extends ExtendM3Transaction {
   private final MIAPI mi;
   private final DatabaseAPI database;
-  private final MICallerAPI miCaller;
-  private final LoggerAPI logger;
   private final ProgramAPI program;
-  private final IonAPI ion;
-  
+
   //Input fields
   private String orno;
   private int XXCONO;
@@ -48,13 +45,10 @@
  /*
   * Delete CO Authorisation extension table row
  */
-  public Delete(MIAPI mi, DatabaseAPI database, MICallerAPI miCaller, LoggerAPI logger, ProgramAPI program, IonAPI ion) {
+  public Delete(MIAPI mi, DatabaseAPI database, ProgramAPI program) {
     this.mi = mi;
     this.database = database;
-  	this.miCaller = miCaller;
-  	this.logger = logger;
   	this.program = program;
-	  this.ion = ion;
   }
   
   public void main() {

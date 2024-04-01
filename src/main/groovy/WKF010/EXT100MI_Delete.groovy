@@ -62,7 +62,7 @@
       return;
     }
     XXCONO = (Integer)program.getLDAZD().CONO;
-    DBAction queryEXTOOH = database.table("EXTOOH").index("00").selection("EXORNO").build();
+    DBAction queryEXTOOH = database.table("EXTOOH").index("00").build();
     DBContainer EXTOOH = queryEXTOOH.getContainer();
     EXTOOH.set("EXCONO", XXCONO);
     EXTOOH.set("EXORNO", orno);

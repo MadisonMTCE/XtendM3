@@ -73,6 +73,17 @@ public class Release extends ExtendM3Transaction {
       return;
     }
     
+    // - validate dlix
+    DBAction queryMHDISH = database.table("MHDISH").index("00").selection("OQDLIX").build();
+    DBContainer MHDISH = queryMHDISH.getContainer();
+    MHDISH.set("OQCONO", XXCONO.toInteger());
+    MHDISH.set("OQINOU", 1);
+    MHDISH.set("OQDLIX", dlix.toInteger());
+    if (!queryMHDISH.read(MHDISH)) {
+      mi.error("Delivery Index is invalid." + XXCONO + " DLIX= " + dlix);
+      return;
+    }        
+    
   	releasePicking(dlix);
   }
 

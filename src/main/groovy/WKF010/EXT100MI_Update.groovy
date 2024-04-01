@@ -27,11 +27,6 @@
  import java.time.LocalDateTime;
  import java.time.format.DateTimeFormatter;
  import java.time.ZoneId;
-// import groovy.json.JsonSlurper;
-// import java.math.BigDecimal;
-// import java.math.RoundingMode;
-// import java.text.DecimalFormat;
-
 /*
  *Modification area - M3
  *Nbr             Date      User id     Description

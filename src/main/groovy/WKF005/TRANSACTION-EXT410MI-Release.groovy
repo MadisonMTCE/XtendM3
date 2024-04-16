@@ -78,7 +78,7 @@ public class Release extends ExtendM3Transaction {
     DBContainer MHDISH = queryMHDISH.getContainer();
     MHDISH.set("OQCONO", XXCONO.toInteger());
     MHDISH.set("OQINOU", 1);
-    MHDISH.set("OQDLIX", dlix.toInteger());
+    MHDISH.set("OQDLIX", Long.parseLong(dlix));
     if (!queryMHDISH.read(MHDISH)) {
       mi.error("Delivery Index is invalid." + XXCONO + " DLIX= " + dlix);
       return;
@@ -101,16 +101,16 @@ public class Release extends ExtendM3Transaction {
     IonResponse response = ion.post(url, headers, params, body);
 
  	  if (response.getError()) {
-      return
+      return;
     }
     
     if (response.getStatusCode() != 200) {
-      return
+      return;
     }
 
     String content = response.getContent()
     if (content != null) {
-      return
+      return;
     }
   }
   	

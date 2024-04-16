@@ -94,7 +94,6 @@ public class EXT110 extends ExtendM3Batch {
     lstToBeApproved = new ArrayList();
     
     ExpressionFactory expression = database.getExpressionFactory("FPLEDG");
-    //expression = expression.eq("EPAPRV", "0");
     
     DBAction queryFPLEDG = database.table("FPLEDG").index("12").selection("EPDIVI", "EPSUNO", "EPSINO", "EPINYR", "EPAPRV").build();
     DBContainer FPLEDG = queryFPLEDG.getContainer();

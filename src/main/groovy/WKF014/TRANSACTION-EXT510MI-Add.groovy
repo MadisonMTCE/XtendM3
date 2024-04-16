@@ -194,7 +194,7 @@ public class Add extends ExtendM3Transaction {
   	DBContainer EXTAPA = actionEXTAPA.getContainer();
   	EXTAPA.set("EXCONO", xxCONO);
   	EXTAPA.set("EXDIVI", divi);
-  	EXTAPA.set("EXPRPN", Integer.parseInt(prpn));
+  	EXTAPA.set("EXPRPN", Long.parseLong(prpn));
   	EXTAPA.set("EXPYON", Integer.parseInt(pyon));
     EXTAPA.set("EXWFAC", wfac);
     EXTAPA.set("EXUSID", usid);
